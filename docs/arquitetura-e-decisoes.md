@@ -274,10 +274,13 @@ Os prints estão na pasta [`evidencias/`](../evidencias/), e o passo a passo par
 | 2 | [`02-grafana-dashboard-red.png`](../evidencias/02-grafana-dashboard-red.png) | **Métricas** (Prometheus) no dashboard RED + logs |
 | 3 | [`03-loki-logs-traceid.png`](../evidencias/03-loki-logs-traceid.png) | **Logs** (Loki) em JSON com `trace_id` e link para o Tempo |
 | 4 | [`04-tempo-trace-distribuido.png`](../evidencias/04-tempo-trace-distribuido.png) | **Traces** (Tempo): um trace atravessando `loja-api` → `pagamento-service` |
-| 5 | [`05-trace-para-logs.png`](../evidencias/05-trace-para-logs.png) | Correlação trace → logs |
+| 5 | [`05-trace-para-logs.png`](../evidencias/05-trace-para-logs.png) | Correlação trace → logs (`pagamento-service`) |
+| 5b | [`05b-trace-para-logs-loja-api.png`](../evidencias/05b-trace-para-logs-loja-api.png) | Correlação trace → logs (`loja-api`, filtro por `trace_id`) |
 | 6 | [`06-prometheus-targets.png`](../evidencias/06-prometheus-targets.png) | Targets do Prometheus todos `UP` |
-| 7 | [`07-service-graph.png`](../evidencias/07-service-graph.png) | Service Graph `loja-api → pagamento-service` |
-| 8 | [`08-trace-com-erro.png`](../evidencias/08-trace-com-erro.png) | Trace com erro (502 do pagamento) com span vermelho |
+| 7 | [`07-loki-log-erro.png`](../evidencias/07-loki-log-erro.png) | Logs de erro (`level="ERROR"`) com `trace_id` |
+| 8 | [`08b-tempo-trace-erro-checkout.png`](../evidencias/08b-tempo-trace-erro-checkout.png) | Trace com erro (502 do pagamento) com span vermelho |
+| 9 | [`09-prometheus-erros.png`](../evidencias/09-prometheus-erros.png) | Taxa de erros 5xx por serviço e rota (Prometheus) |
+| 10 | [`10-service-graph.png`](../evidencias/10-service-graph.png) | Service Graph `loja-api → pagamento-service` |
 
 Há também uma prova em texto, coletada por script: [`evidencias/saida-verificacao.txt`](../evidencias/saida-verificacao.txt)
 (gerada por `evidencias/coletar.sh`).
