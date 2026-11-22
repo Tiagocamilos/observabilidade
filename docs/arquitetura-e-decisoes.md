@@ -60,11 +60,21 @@ O sistema implementa uma arquitetura de microsserviços instrumentada ponta a po
 
 ## 5. Evidências de Funcionamento
 
-Os screenshots comprobatórios estão salvos na pasta `evidencias/`:
-1. `evidencias/01-docker-compose-ps.png` — Todos os 8 containers ativos (`Up`).
-2. `evidencias/02-grafana-dashboard-red.png` — Dashboard RED mostrando Rate, Errors, Duration (p95) e logs.
-3. `evidencias/03-loki-logs-traceid.png` — Consulta LogQL exibindo logs JSON estruturados com `trace_id` e link para o Tempo.
-4. `evidencias/04-tempo-trace-distribuido.png` — Trace distribuído atravessando `loja-api` e `pagamento-service` com spans manuais.
+Os screenshots comprobatórios estão na pasta [`evidencias/`](../evidencias/), com legenda em [`evidencias/README.md`](../evidencias/README.md):
+
+| Sinal | Arquivo | O que prova |
+| :--- | :--- | :--- |
+| Stack | `01-docker-compose-ps.png` | Os 8 containers ativos (`Up`). |
+| Métricas + Logs | `02-grafana-dashboard-red.png` | Dashboard RED provisionado (Rate, Errors, Duration p95) e logs com `trace_id`. |
+| Logs | `03-loki-logs-traceid.png` | Logs JSON no Loki e salto direto para o trace (campo derivado `TraceID`). |
+| Traces | `04-tempo-trace-distribuido.png` | Trace `POST /checkout` atravessando `loja-api` e `pagamento-service` (5 spans, 2 serviços). |
+| Correlação | `05-trace-para-logs.png`, `05b-trace-para-logs-loja-api.png` | Do trace para os logs da mesma requisição, via `trace_id`. |
+| Métricas | `06-prometheus-targets.png` | Os 4 targets do Prometheus em `UP`. |
+| Erros (logs) | `07-loki-log-erro.png` | Logs `level="ERROR"` com `trace_id`. |
+| Erros (traces) | `08b-tempo-trace-erro-checkout.png` | Trace de checkout com erro atravessando os dois serviços. |
+| Erros (métricas) | `09-prometheus-erros.png` | Taxa de respostas 5xx por serviço e rota. |
+
+> Os erros observados são **intencionais**: a rota `/erro` é chamada de propósito pelo gerador de tráfego (~5%) e o `pagamento-service` falha em ~10% das chamadas, para que haja falhas a investigar.
 
 <!-- RESUMO FINAL (Fim): Documentação completa exigida pelos critérios de avaliação do Projeto Final,
      justificando escolhas técnicas de arquitetura, cardinalidade, estatística e correlação. -->
