@@ -26,9 +26,16 @@ Suba tudo e espere ~2 min: `docker compose up -d --build`. Depois rode `./eviden
 | 6 | `06-prometheus-targets.png` | http://localhost:9090/targets — todos UP |
 <img width="1304" height="664" alt="{6102226C-EB81-41B5-8EFC-EA71B11FBEA0}" src="https://github.com/user-attachments/assets/23de9061-557f-487a-b25c-991bdef3a4d4" />
 
-Print de um trace com erro (`/erro` ou pagamento 502) com o span em vermelho.
+| 7 | Print de um trace com erro (`/erro` ou pagamento 502) com o span em vermelho.
 <img width="1277" height="644" alt="{3367C954-5BFA-41C9-A4B3-FE3BC6D1AE75}" src="https://github.com/user-attachments/assets/0872647b-fc8a-4ead-8d50-4f196dcd2f1a" />
 <img width="1203" height="664" alt="{FFD829C4-B153-45A5-862C-EA0A18DC567C}" src="https://github.com/user-attachments/assets/7c0b748a-ce30-443b-803a-827a19a7d6fd" />
+
+| 8 |
+
+| 9 | 09-prometheus-erros.png
+<img width="1290" height="652" alt="{58766DAE-2ED0-4F93-A331-EC0E6BD69F6D}" src="https://github.com/user-attachments/assets/976ea34c-bea5-4218-a89a-8ae97485c668" />
+
+
 
 ## Prática 4 (PDF separado no diretório: atividade-4-misterio-checkout/ )
 No diretório `atividade-4-misterio-checkout/`. **Pare antes a stack do projeto** (`docker compose down`): as portas são as mesmas.
