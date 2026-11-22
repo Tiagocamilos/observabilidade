@@ -12,6 +12,7 @@ services:
       # CORREÇÃO APLICADA: Antes estava DB_POOL_SIZE=2, causando fila e timeout para 8 clientes simultâneos.
       # Com 20 conexões e timeout de 5s, o pool absorve toda a concorrência sem saturação.
       - DB_POOL_SIZE=20
+      #- DB_POOL_SIZE=2
       - DB_POOL_TIMEOUT=5
     labels:
       # Labels obrigatórios para o Grafana Alloy descobrir o container e indexar os logs no Loki
