@@ -16,7 +16,8 @@ Suba tudo e espere ~2 min: `docker compose up -d --build`. Depois rode `./eviden
 <img width="1124" height="659" alt="{2046E850-C14F-4558-860F-5FFA0870B6B5}" src="https://github.com/user-attachments/assets/80aa52d1-aaf3-4697-842e-4de043ca5629" />
 
 
-| 4 | `04-tempo-trace-distribuido.png` | Clique no botão Tempo (ou Explore → Tempo → Search → Run query, abra um `POST /checkout`): árvore loja-api → pagamento-service |
+| 4 | `04-tempo-trace-distribuido.png` | Clique no botão Tempo (ou Explore → Tempo → Search → Run query, abra um `POST /checkout`): árvore loja-api → pagamento-service | <img width="972" height="665" alt="{9FDC3BE9-8701-40AB-B836-9C863E8A5B54}" src="https://github.com/user-attachments/assets/4d17e9a2-30d3-4243-b3ef-fac3d805d650" />
+
 
 
 | 5 | `05-trace-para-logs.png` | No trace, clique em **Logs for this span** (correlação trace→logs) |
