@@ -7,6 +7,8 @@ Suba tudo e espere ~2 min: `docker compose up -d --build`. Depois rode `./eviden
 | # | Arquivo | Como obter |
 |---|---------|-----------|
 | 1 | `01-docker-compose-ps.png` | Terminal: `docker compose ps` — 8 serviços Up |
+<img width="1920" height="603" alt="{C3DF1527-85A3-435D-BDCC-D6FC125FAE68}" src="https://github.com/user-attachments/assets/bd7498c1-d413-4890-851a-69e86d5d6cbd" />
+
 | 2 | `02-grafana-dashboard-red.png` | http://localhost:3000 (admin/admin) → Dashboards → Projeto Final - Observabilidade → painel RED & Logs (mostra métricas Prometheus + logs Loki) |
 | 3 | `03-loki-logs-traceid.png` | Explore → Loki → `{service=~"loja-api|pagamento-service"} \| json`; expanda uma linha e mostre o botão **Tempo** no campo TraceID |
 | 4 | `04-tempo-trace-distribuido.png` | Clique no botão Tempo (ou Explore → Tempo → Search → Run query, abra um `POST /checkout`): árvore loja-api → pagamento-service |
