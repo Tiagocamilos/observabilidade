@@ -30,7 +30,9 @@ Suba tudo e espere ~2 min: `docker compose up -d --build`. Depois rode `./eviden
 <img width="1277" height="644" alt="{3367C954-5BFA-41C9-A4B3-FE3BC6D1AE75}" src="https://github.com/user-attachments/assets/0872647b-fc8a-4ead-8d50-4f196dcd2f1a" />
 <img width="1203" height="664" alt="{FFD829C4-B153-45A5-862C-EA0A18DC567C}" src="https://github.com/user-attachments/assets/7c0b748a-ce30-443b-803a-827a19a7d6fd" />
 
-| 8 |
+| 8 | 08b-tempo-trace-erro-checkout.png
+<img width="1172" height="672" alt="{BBBE34B5-0427-49F0-9F5D-D791BFDF06B7}" src="https://github.com/user-attachments/assets/cb968684-faaa-4b1b-826a-77fa7e529b70" />
+
 
 | 9 | 09-prometheus-erros.png
 <img width="1290" height="652" alt="{58766DAE-2ED0-4F93-A331-EC0E6BD69F6D}" src="https://github.com/user-attachments/assets/976ea34c-bea5-4218-a89a-8ae97485c668" />
