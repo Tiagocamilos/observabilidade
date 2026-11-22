@@ -28,7 +28,7 @@ Suba tudo e espere ~2 min: `docker compose up -d --build`. Depois rode `./eviden
 
 Print de um trace com erro (`/erro` ou pagamento 502) com o span em vermelho.
 <img width="1277" height="644" alt="{3367C954-5BFA-41C9-A4B3-FE3BC6D1AE75}" src="https://github.com/user-attachments/assets/0872647b-fc8a-4ead-8d50-4f196dcd2f1a" />
-
+<img width="1203" height="664" alt="{FFD829C4-B153-45A5-862C-EA0A18DC567C}" src="https://github.com/user-attachments/assets/7c0b748a-ce30-443b-803a-827a19a7d6fd" />
 
 ## Prática 4 (PDF separado)
 Use a pasta `atividade-4-misterio-checkout/`. **Pare antes a stack do projeto** (`docker compose down`): as portas são as mesmas.
