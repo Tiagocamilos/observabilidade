@@ -19,13 +19,13 @@ Suba tudo e espere ~2 min: `docker compose up -d --build`. Depois rode `./eviden
 | 4 | `04-tempo-trace-distribuido.png` | Clique no botão Tempo (ou Explore → Tempo → Search → Run query, abra um `POST /checkout`): árvore loja-api → pagamento-service | <img width="972" height="665" alt="{9FDC3BE9-8701-40AB-B836-9C863E8A5B54}" src="https://github.com/user-attachments/assets/4d17e9a2-30d3-4243-b3ef-fac3d805d650" />
 
 
-
 | 5 | `05-trace-para-logs.png` | No trace, clique em **Logs for this span** (correlação trace→logs) |
-
+<img width="797" height="664" alt="{B6DBEC7B-5C13-442E-9FE4-0AD8AE4EE733}" src="https://github.com/user-attachments/assets/06961fb7-5cc6-41d2-900c-24bf8b02b0a6" />
+<img width="845" height="668" alt="{9A7F6ABC-A03B-40BC-BFBE-A67969C795FA}" src="https://github.com/user-attachments/assets/d9b7dee5-2480-461a-8221-8af844fecda0" />
 
 | 6 | `06-prometheus-targets.png` | http://localhost:9090/targets — todos UP |
 
-Opcional (bônus): print de um trace com erro (`/erro` ou pagamento 502) com o span em vermelho.
+Print de um trace com erro (`/erro` ou pagamento 502) com o span em vermelho.
 
 ## Prática 4 (PDF separado)
 Use a pasta `atividade-4-misterio-checkout/`. **Pare antes a stack do projeto** (`docker compose down`): as portas são as mesmas.
