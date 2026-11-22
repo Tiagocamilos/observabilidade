@@ -265,7 +265,8 @@ query trace → logs encontrar o stream certo no Loki.
 
 ## 7. Evidências de Funcionamento
 
-Os prints estão na pasta [`evidencias/`](../evidencias/), e o passo a passo para gerá-los está em
+Os prints estão na pasta [`evidencias/`](../evidencias/). A galeria com legendas está em
+[`evidencias/README.md`](../evidencias/README.md), e o passo a passo para gerá-los, em
 [`evidencias/ROTEIRO.md`](../evidencias/ROTEIRO.md).
 
 | # | Arquivo | O que comprova |
@@ -281,6 +282,9 @@ Os prints estão na pasta [`evidencias/`](../evidencias/), e o passo a passo par
 | 8 | [`08b-tempo-trace-erro-checkout.png`](../evidencias/08b-tempo-trace-erro-checkout.png) | Trace com erro (502 do pagamento) com span vermelho |
 | 9 | [`09-prometheus-erros.png`](../evidencias/09-prometheus-erros.png) | Taxa de erros 5xx por serviço e rota (Prometheus) |
 | 10 | [`10-service-graph.png`](../evidencias/10-service-graph.png) | Service Graph `loja-api → pagamento-service` |
+
+> Os erros observados são **intencionais**: a rota `/erro` é chamada de propósito pelo gerador de tráfego (~5%)
+> e o `pagamento-service` falha em ~10% das chamadas, para que haja falhas a investigar.
 
 Há também uma prova em texto, coletada por script: [`evidencias/saida-verificacao.txt`](../evidencias/saida-verificacao.txt)
 (gerada por `evidencias/coletar.sh`).
