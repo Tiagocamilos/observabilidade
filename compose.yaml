@@ -98,6 +98,8 @@ services:
   tempo:
     image: grafana/tempo:2.7.2
     container_name: tempo
+    # root: o volume nomeado nasce com dono root e o Tempo (uid 10001) não conseguiria gravar o WAL
+    user: root
     command: ["-config.file=/etc/tempo/tempo.yml"]
     ports:
       - "3200:3200"

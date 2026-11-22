@@ -1,0 +1,37 @@
+== Sat 21 Nov 2026 20:50:32 -03 ==
+
+## docker compose ps
+NAME                IMAGE                               COMMAND                  SERVICE             CREATED         STATUS         PORTS
+alloy               grafana/alloy:v1.20.1               "/bin/alloy run --se…"   alloy               2 minutes ago   Up 2 minutes   0.0.0.0:4317-4318->4317-4318/tcp, [::]:4317-4318->4317-4318/tcp, 0.0.0.0:12345->12345/tcp, [::]:12345->12345/tcp
+grafana             grafana/grafana:13.2.3              "/run.sh"                grafana             2 minutes ago   Up 2 minutes   0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp
+loja-api            observabilidade-loja-api            "python app.py"          loja-api            2 minutes ago   Up 2 minutes   0.0.0.0:8080->8080/tcp, [::]:8080->8080/tcp
+loki                grafana/loki:3.7.8                  "/usr/bin/loki -conf…"   loki                2 minutes ago   Up 2 minutes   0.0.0.0:3100->3100/tcp, [::]:3100->3100/tcp
+pagamento-service   observabilidade-pagamento-service   "python app.py"          pagamento-service   2 minutes ago   Up 2 minutes   0.0.0.0:8081->8081/tcp, [::]:8081->8081/tcp
+prometheus          prom/prometheus:v3.15.0             "/bin/prometheus --c…"   prometheus          2 minutes ago   Up 2 minutes   0.0.0.0:9090->9090/tcp, [::]:9090->9090/tcp
+tempo               grafana/tempo:2.7.2                 "/tempo -config.file…"   tempo               2 minutes ago   Up 2 minutes   0.0.0.0:3200->3200/tcp, [::]:3200->3200/tcp
+trafego             curlimages/curl:8.22.0              "sh /gerar-trafego.sh"   trafego             2 minutes ago   Up 2 minutes   
+
+## Prometheus: targets (esperado: 4x up)
+alloy up
+loja-api up
+pagamento-service up
+prometheus up
+
+## Prometheus: requisições por serviço
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"service":"loja-api"},"value":[1795305032.360,"292"]},{"metric":{"service":"pagamento-service"},"value":[1795305032.360,"149"]}]}}
+
+## Loki: labels service (esperado: loja-api, pagamento-service)
+{"status":"success","data":["loja-api","pagamento-service"]}
+
+
+## Loki: 1 log recente com trace_id
+{"status":"success","data":{"resultType":"streams","result":[{"stream":{"container":"loja-api","detected_level":"info","service":"loja-api","service_name":"loja-api"},"values":[["1795305031649954627","{\"timestamp\": \"2026-11-21T23:50:31.649590+00:00\", \"level\": \"INFO\", \"service\": \"loja-api\", \"message\": \"Requisição atendida com sucesso na loja-api\", \"trace_id\": \"ba1c2828b11426e3179db88575c40380\", \"span_id\": \"eef85169be22db32\", \"request_id\": \"b41f928a-d085-4352-9cc9-4c5503135234\", \"path\": \"/produtos\", \"status\": 200, \"duration_ms\": 27.41}"]]}],"stats":{"summary":{"bytesProcessedPerSecond":12801482,"linesProcessedPerSecond":36981,"totalBytesProcessed":102462,"totalLinesProcessed":296,"execTime":0.008004,"queueTime":0.000428,"subqueries":0,"totalEntriesReturned":1,"splits":1,"shards":1,"totalPostFilterLines":296,"totalStructuredMetadataBytesProcessed":2368},"querier":{"store":{"totalChunksRef":0,"totalChunksDownloaded":0,"chunksDownloadTime":0,"queryReferencedStructuredMetadata":false,"queryUsedV2Engine":false,"chunk":{"headChunkBytes":0,"headChunkLines":0,"decompressedBytes":0,"decompressedLines":0,"compressedBytes":0,"totalDuplicates":0,"postFilterLines":0,"headChunkStructuredMetadataBytes":0,"decompressedStructuredMetadataBytes":0},"chunkRefsFetchTime":0,"congestionControlLatency":0,"pipelineWrapperFilteredLines":0,"dataobj":{"prePredicateDecompressedRows":0,"prePredicateDecompressedBytes":0,"prePredicateDecompressedStructuredMetadataBytes":0,"postPredicateRows":0,"postPredicateDecompressedBytes":0,"postPredicateStructuredMetadataBytes":0,"postFilterRows":0,"pagesScanned":0,"pagesDownloaded":0,"pagesDownloadedBytes":0,"pageBatches":0,"totalRowsAvailable":0,"totalPageDownloadTime":0}},"querierExecTime":0.007272},"ingester":{"totalReached":1,"totalChunksMatched":1,"totalBatches":1,"totalLinesSent":1,"store":{"totalChunksRef":0,"totalChunksDownloaded":0,"chunksDownloadTime":0,"queryReferencedStructuredMetadata":false,"queryUsedV2Engine":false,"chunk":{"headChunkBytes":102462,"headChunkLines":296,"decompressedBytes":0,"decompressedLines":0,"compressedBytes":0,"totalDuplicates":0,"postFilterLines":296,"headChunkStructuredMetadataBytes":2368,"decompressedStructuredMetadataBytes":0},"chunkRefsFetchTime":94333,"congestionControlLatency":0,"pipelineWrapperFilteredLines":0,"dataobj":{"prePredicateDecompressedRows":0,"prePredicateDecompressedBytes":0,"prePredicateDecompressedStructuredMetadataBytes":0,"postPredicateRows":0,"postPredicateDecompressedBytes":0,"postPredicateStructuredMetadataBytes":0,"postFilterRows":0,"pagesScanned":0,"pagesDownloaded":0,"pagesDownloadedBytes":0,"pageBatches":0,"totalRowsAvailable":0,"totalPageDownloadTime":0}},"recvWaitTime":0.001392},"cache":{"chunk":{"entriesFound":0,"entriesRequested":0,"entriesStored":0,"bytesReceived":0,"bytesSent":0,"requests":0,"downloadTime":0,"queryLengthServed":0},"index":{"entriesFound":0,"entriesRequested":0,"entriesStored":0,"bytesReceived":0,"bytesSent":0,"requests":0,"downloadTime":0,"queryLengthServed":0},"result":{"entriesFound":0,"entriesRequested":0,"entriesStored":0,"bytesReceived":0,"bytesSent":0,"requests":0,"downloadTime":0,"queryLengthServed":0},"statsResult":{"entriesFound":0,"entriesRequested":0,"entriesStored":0,"bytesReceived":0,"bytesSent":0,"requests":0,"downloadTime":0,"queryLengthServed":0},"volumeResult":{"entriesFound":0,"entriesRequested":0,"entriesStored":0,"bytesReceived":0,"bytesSent":0,"requests":0,"downloadTime":0,"queryLengthServed":0},"seriesResult":{"entriesFound":0,"entriesRequested":0,"entriesStored":0,"bytesReceived":0,"bytesSent":0,"requests":0,"downloadTime":0,"queryLengthServed":0},"labelResult":{"entriesFound":0,"entriesRequested":0,"entriesStored":0,"bytesReceived":0,"bytesSent":0,"requests":0,"downloadTime":0,"queryLengthServed":0},"instantMetricResult":{"entriesFound":0,"entriesRequested":0,"entriesStored":0,"bytesReceived":0,"bytesSent":0,"requests":0,"downloadTime":0,"queryLengthServed":0}},"index":{"totalChunks":0,"postFilterChunks":0,"shardsDuration":0,"usedBloomFilters":false,"totalStreams":0,"chunkRefsLookupTime":0,"bloomFilterTime":0}}}}
+
+
+## Tempo: busca de traces (esperado: traces de loja-api)
+{"traces":[{"traceID":"de1ed102f2c2287e779b70018532d8a3","rootServiceName":"loja-api","rootTraceName":"HTTP POST /checkout","startTimeUnixNano":"1795304860501648839","durationMs":415},{"traceID":"fcbb0e19d3b0dbcf27e5079ab89aa396","rootServiceName":"loja-api","rootTraceName":"HTTP GET /erro","startTimeUnixNano":"1795304859566144631","durationMs":1},{"traceID":"161985d06fbeb02d876b3e83905f337a","rootServiceName":"loja-api","rootTraceName":"HTTP GET /","startTimeUnixNano":"1795304859139178380","durationMs":18}],"metrics":{"inspectedTraces":4,"inspectedBytes":"18524","completedJobs":1,"totalJobs":1}}
+
+## Grafana: datasources provisionados
+Loki loki
+Prometheus prometheus
+Tempo tempo

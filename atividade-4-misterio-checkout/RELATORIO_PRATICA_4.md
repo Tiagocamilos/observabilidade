@@ -5,7 +5,8 @@
 
 **Disciplina:** Fundamentos de Observabilidade: Métricas, Logs e Traces  
 **Professor:** Mateus Valgueiro  
-**Aluno(a) / Grupo:** Danilo Humberto (`github.com/dhuberto/observabilidade`)  
+**Grupo:** Tiago Camilo (@Tiagocamilos), Danilo Huberto (@dhuberto), Eric Malone (@emcsmalone), Helierison Cardoso (@helierison), Everton Genuino (@tongenx)  
+**Repositório:** `github.com/Tiagocamilos/observabilidade`  
 
 ---
 
