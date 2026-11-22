@@ -10,6 +10,8 @@ Suba tudo e espere ~2 min: `docker compose up -d --build`. Depois rode `./eviden
 <img width="1920" height="603" alt="{C3DF1527-85A3-435D-BDCC-D6FC125FAE68}" src="https://github.com/user-attachments/assets/bd7498c1-d413-4890-851a-69e86d5d6cbd" />
 
 | 2 | `02-grafana-dashboard-red.png` | http://localhost:3000 (admin/admin) → Dashboards → Projeto Final - Observabilidade → painel RED & Logs (mostra métricas Prometheus + logs Loki) |
+<img width="1359" height="744" alt="{8BF8951B-B2CD-4DB8-AA3A-CB124EB139B9}" src="https://github.com/user-attachments/assets/005a5afa-7b4e-4f61-ad12-89d454fa6f34" />
+
 | 3 | `03-loki-logs-traceid.png` | Explore → Loki → `{service=~"loja-api|pagamento-service"} \| json`; expanda uma linha e mostre o botão **Tempo** no campo TraceID |
 | 4 | `04-tempo-trace-distribuido.png` | Clique no botão Tempo (ou Explore → Tempo → Search → Run query, abra um `POST /checkout`): árvore loja-api → pagamento-service |
 | 5 | `05-trace-para-logs.png` | No trace, clique em **Logs for this span** (correlação trace→logs) |
