@@ -17,9 +17,13 @@ from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExport
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.trace import Status, StatusCode
+from opentelemetry.trace import SpanKind, Status, StatusCode
 from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
-from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, generate_latest
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, REGISTRY, generate_latest
+from prometheus_client.openmetrics.exposition import (
+    CONTENT_TYPE_LATEST as OPENMETRICS_CONTENT_TYPE,
+    generate_latest as generate_openmetrics,
+)
 
 SERVICE_NAME = os.environ.get("SERVICE_NAME", "loja-api")
 PORT = int(os.environ.get("PORT", "8080"))
@@ -53,10 +57,22 @@ IN_PROGRESS = Gauge(
 )
 
 
-def log(level: str, message: str, **extra) -> None:
+def current_ids():
+    """Retorna (trace_id, span_id) do span ativo em hexadecimal, ou strings vazias."""
     span_ctx = trace.get_current_span().get_span_context()
-    trace_id = format(span_ctx.trace_id, "032x") if span_ctx.is_valid else ""
-    span_id = format(span_ctx.span_id, "016x") if span_ctx.is_valid else ""
+    if not span_ctx.is_valid:
+        return "", ""
+    return format(span_ctx.trace_id, "032x"), format(span_ctx.span_id, "016x")
+
+
+def exemplar():
+    """Exemplar com o trace_id atual: permite pular de um ponto do gráfico para o trace."""
+    trace_id, _ = current_ids()
+    return {"trace_id": trace_id} if trace_id else None
+
+
+def log(level: str, message: str, **extra) -> None:
+    trace_id, span_id = current_ids()
 
     record = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -82,10 +98,7 @@ class LojaHandler(BaseHTTPRequestHandler):
 
     def _handle_request(self):
         if self.path == "/metrics":
-            self.send_response(200)
-            self.send_header("Content-Type", CONTENT_TYPE_LATEST)
-            self.end_headers()
-            self.wfile.write(generate_latest())
+            self._send_metrics()
             return
 
         route = self.path if self.path in KNOWN_PATHS else "outro"
@@ -93,8 +106,10 @@ class LojaHandler(BaseHTTPRequestHandler):
         start = time.time()
         IN_PROGRESS.labels(service=SERVICE_NAME).inc()
 
-        with tracer.start_as_current_span(f"HTTP {self.command} {route}") as root_span:
-            root_span.set_attribute("http.method", self.command)
+        with tracer.start_as_current_span(
+            f"HTTP {self.command} {route}", kind=SpanKind.SERVER
+        ) as root_span:
+            root_span.set_attribute("http.request.method", self.command)
             root_span.set_attribute("http.route", route)
             root_span.set_attribute("request.id", request_id)
 
@@ -121,9 +136,13 @@ class LojaHandler(BaseHTTPRequestHandler):
                 duration_ms = round(duration * 1000, 2)
                 IN_PROGRESS.labels(service=SERVICE_NAME).dec()
 
-                root_span.set_attribute("http.status_code", status)
-                REQUESTS.labels(service=SERVICE_NAME, path=route, status=str(status)).inc()
-                DURATION.labels(service=SERVICE_NAME, path=route).observe(duration)
+                root_span.set_attribute("http.response.status_code", status)
+                REQUESTS.labels(service=SERVICE_NAME, path=route, status=str(status)).inc(
+                    exemplar=exemplar()
+                )
+                DURATION.labels(service=SERVICE_NAME, path=route).observe(
+                    duration, exemplar=exemplar()
+                )
 
                 if status >= 500:
                     log(
@@ -133,6 +152,7 @@ class LojaHandler(BaseHTTPRequestHandler):
                         path=route,
                         status=status,
                         duration_ms=duration_ms,
+                        erro=payload.get("erro", ""),
                     )
                 else:
                     log(
@@ -149,6 +169,17 @@ class LojaHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(json.dumps(payload, ensure_ascii=False).encode("utf-8"))
 
+    def _send_metrics(self):
+        # Prometheus pede OpenMetrics no header Accept: só nesse formato os exemplars são expostos.
+        if "application/openmetrics-text" in self.headers.get("Accept", ""):
+            content_type, body = OPENMETRICS_CONTENT_TYPE, generate_openmetrics(REGISTRY)
+        else:
+            content_type, body = CONTENT_TYPE_LATEST, generate_latest()
+        self.send_response(200)
+        self.send_header("Content-Type", content_type)
+        self.end_headers()
+        self.wfile.write(body)
+
     def _processar_checkout(self, parent_span, request_id: str):
         pedido_id = f"PED-{random.randint(1000, 9999)}"
         valor = round(random.uniform(50.0, 1200.0), 2)
@@ -161,7 +192,11 @@ class LojaHandler(BaseHTTPRequestHandler):
             time.sleep(random.uniform(0.03, 0.12))
             estoque_span.add_event("estoque_reservado_com_sucesso")
 
-        with tracer.start_as_current_span("chamar_pagamento_service") as call_span:
+        with tracer.start_as_current_span(
+            "chamar_pagamento_service", kind=SpanKind.CLIENT
+        ) as call_span:
+            call_span.set_attribute("http.request.method", "POST")
+            call_span.set_attribute("server.address", PAGAMENTO_URL)
             headers = {"Content-Type": "application/json"}
             TraceContextTextMapPropagator().inject(headers)
 
@@ -173,11 +208,25 @@ class LojaHandler(BaseHTTPRequestHandler):
             try:
                 with urllib.request.urlopen(req, timeout=3.0) as resp:
                     resp_body = json.loads(resp.read().decode("utf-8"))
+                    call_span.set_attribute("http.response.status_code", resp.status)
                     call_span.set_attribute("pagamento.status", "aprovado")
+                    call_span.add_event("pagamento_aprovado")
                     return 200, {"pedido_id": pedido_id, "pagamento": resp_body}
             except urllib.error.HTTPError as http_err:
+                call_span.set_attribute("http.response.status_code", http_err.code)
+                call_span.set_attribute("pagamento.status", "recusado")
                 call_span.set_status(Status(StatusCode.ERROR, f"HTTP {http_err.code}"))
-                raise RuntimeError(f"Pagamento recusado pelo serviço downstream (HTTP {http_err.code})")
+                raise RuntimeError(
+                    f"Pagamento recusado pelo serviço downstream (HTTP {http_err.code})"
+                ) from http_err
+            except (urllib.error.URLError, TimeoutError) as conn_err:
+                # Falha de rede/timeout: o downstream nem respondeu.
+                call_span.record_exception(conn_err)
+                call_span.set_attribute("pagamento.status", "indisponivel")
+                call_span.set_status(Status(StatusCode.ERROR, "pagamento-service indisponível"))
+                raise RuntimeError(
+                    f"pagamento-service indisponível: {conn_err}"
+                ) from conn_err
 
     def log_message(self, format, *args):
         pass

@@ -10,6 +10,11 @@ datasources:
     access: proxy
     url: http://prometheus:9090
     isDefault: true
+    jsonData:
+      # Exemplars: cada ponto do histograma carrega um trace_id -> link direto para o Tempo
+      exemplarTraceIdDestinations:
+        - name: trace_id
+          datasourceUid: tempo
 
   - name: Loki
     type: loki
@@ -39,6 +44,20 @@ datasources:
         filterBySpanID: false
         customQuery: true
         query: '{service="$${__span.tags["service.name"]}"} | json | trace_id="$${__span.traceId}"'
+      tracesToMetrics:
+        datasourceUid: prometheus
+        spanStartTimeShift: "-5m"
+        spanEndTimeShift: "5m"
+        tags:
+          - key: service.name
+            value: service
+        queries:
+          - name: Taxa de requisições do serviço
+            query: 'sum(rate(http_requests_total{$$__tags}[1m]))'
+          - name: Latência p95 do serviço
+            query: 'histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{$$__tags}[1m])))'
+      serviceMap:
+        datasourceUid: prometheus
       nodeGraph:
         enabled: true
 

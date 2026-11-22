@@ -14,13 +14,19 @@ from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExport
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.trace import Status, StatusCode
+from opentelemetry.trace import SpanKind, Status, StatusCode
 from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
-from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, REGISTRY, generate_latest
+from prometheus_client.openmetrics.exposition import (
+    CONTENT_TYPE_LATEST as OPENMETRICS_CONTENT_TYPE,
+    generate_latest as generate_openmetrics,
+)
 
 SERVICE_NAME = os.environ.get("SERVICE_NAME", "pagamento-service")
 PORT = int(os.environ.get("PORT", "8081"))
 OTLP_ENDPOINT = os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT", "http://alloy:4318/v1/traces")
+# Probabilidade de falha simulada na operadora de cartão (padrão: 10%)
+TAXA_FALHA = float(os.environ.get("TAXA_FALHA_PAGAMENTO", "0.10"))
 
 resource = Resource.create({"service.name": SERVICE_NAME})
 provider = TracerProvider(resource=resource)
@@ -41,11 +47,29 @@ DURATION = Histogram(
     buckets=(0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5),
 )
 
+PAGAMENTOS = Counter(
+    "pagamentos_total",
+    "Pagamentos processados por resultado (aprovado, recusado, invalido)",
+    ["service", "resultado"],
+)
+
+
+def current_ids():
+    """Retorna (trace_id, span_id) do span ativo em hexadecimal, ou strings vazias."""
+    span_ctx = trace.get_current_span().get_span_context()
+    if not span_ctx.is_valid:
+        return "", ""
+    return format(span_ctx.trace_id, "032x"), format(span_ctx.span_id, "016x")
+
+
+def exemplar():
+    """Exemplar com o trace_id atual: permite pular de um ponto do gráfico para o trace."""
+    trace_id, _ = current_ids()
+    return {"trace_id": trace_id} if trace_id else None
+
 
 def log(level: str, message: str, **extra) -> None:
-    span_ctx = trace.get_current_span().get_span_context()
-    trace_id = format(span_ctx.trace_id, "032x") if span_ctx.is_valid else ""
-    span_id = format(span_ctx.span_id, "016x") if span_ctx.is_valid else ""
+    trace_id, span_id = current_ids()
 
     record = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -62,78 +86,97 @@ def log(level: str, message: str, **extra) -> None:
 class PagamentoHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/metrics":
-            self.send_response(200)
-            self.send_header("Content-Type", CONTENT_TYPE_LATEST)
-            self.end_headers()
-            self.wfile.write(generate_latest())
+            self._send_metrics()
             return
 
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(b"pagamento-service ativo\n")
+        self._send_json(200, {"status": "pagamento-service ativo"})
 
     def do_POST(self):
         if self.path != "/pagar":
-            self.send_response(404)
-            self.end_headers()
+            self._send_json(404, {"erro": "rota não encontrada"})
             return
 
         start = time.time()
-        content_len = int(self.headers.get("Content-Length", "0"))
-        raw_body = self.rfile.read(content_len).decode("utf-8") if content_len > 0 else "{}"
-        dados = json.loads(raw_body)
-        pedido_id = dados.get("pedido_id", "desconhecido")
-        valor = dados.get("valor", 0.0)
-
         carrier = {k.lower(): v for k, v in self.headers.items()}
         parent_context = TraceContextTextMapPropagator().extract(carrier=carrier)
 
-        with tracer.start_as_current_span("POST /pagar", context=parent_context) as span:
+        # SpanKind.SERVER + o CLIENT da loja-api formam a aresta loja-api -> pagamento-service
+        # no Service Graph gerado pelo Tempo.
+        with tracer.start_as_current_span(
+            "POST /pagar", context=parent_context, kind=SpanKind.SERVER
+        ) as span:
+            span.set_attribute("http.request.method", "POST")
+            span.set_attribute("http.route", "/pagar")
+
+            try:
+                content_len = int(self.headers.get("Content-Length", "0"))
+                raw_body = self.rfile.read(content_len).decode("utf-8") if content_len > 0 else "{}"
+                dados = json.loads(raw_body)
+            except (ValueError, UnicodeDecodeError) as exc:
+                span.record_exception(exc)
+                span.set_status(Status(StatusCode.ERROR, "corpo da requisição inválido"))
+                self._finalizar(span, start, 400, {"erro": "corpo inválido"}, "invalido",
+                                "WARN", "Requisição de pagamento com corpo inválido",
+                                detalhe=str(exc))
+                return
+
+            pedido_id = dados.get("pedido_id", "desconhecido")
+            valor = dados.get("valor", 0.0)
             span.set_attribute("pedido.id", pedido_id)
             span.set_attribute("pedido.valor", valor)
 
             with tracer.start_as_current_span("analise_antifraude") as fraude_span:
                 fraude_span.add_event("consultando_score_risco")
                 time.sleep(random.uniform(0.05, 0.35))
+                score = round(random.uniform(0, 1), 3)
+                fraude_span.set_attribute("antifraude.score", score)
+                fraude_span.add_event("score_calculado", {"antifraude.score": score})
 
-                if random.random() < 0.10:
+                if random.random() < TAXA_FALHA:
                     err_msg = "Timeout na comunicação com operadora de cartão"
+                    exc = TimeoutError(err_msg)
+                    fraude_span.record_exception(exc)
                     fraude_span.set_status(Status(StatusCode.ERROR, err_msg))
                     span.set_status(Status(StatusCode.ERROR, err_msg))
-                    duration = time.time() - start
-                    REQUESTS.labels(service=SERVICE_NAME, path="/pagar", status="502").inc()
-                    DURATION.labels(service=SERVICE_NAME, path="/pagar").observe(duration)
-                    log(
-                        "ERROR",
-                        err_msg,
-                        pedido_id=pedido_id,
-                        path="/pagar",
-                        status=502,
-                        duration_ms=round(duration * 1000, 2),
-                    )
-                    self.send_response(502)
-                    self.send_header("Content-Type", "application/json")
-                    self.end_headers()
-                    self.wfile.write(json.dumps({"erro": err_msg}).encode("utf-8"))
+                    self._finalizar(span, start, 502, {"erro": err_msg}, "recusado",
+                                    "ERROR", err_msg, pedido_id=pedido_id, valor=valor)
                     return
 
-            duration = time.time() - start
-            REQUESTS.labels(service=SERVICE_NAME, path="/pagar", status="200").inc()
-            DURATION.labels(service=SERVICE_NAME, path="/pagar").observe(duration)
-            log(
-                "INFO",
-                "Pagamento aprovado com sucesso",
-                pedido_id=pedido_id,
-                valor=valor,
-                path="/pagar",
-                status=200,
-                duration_ms=round(duration * 1000, 2),
-            )
+            self._finalizar(span, start, 200, {"status": "aprovado", "pedido_id": pedido_id},
+                            "aprovado", "INFO", "Pagamento aprovado com sucesso",
+                            pedido_id=pedido_id, valor=valor)
 
+    def _finalizar(self, span, start, status, payload, resultado, level, message, **extra):
+        """Ponto único de saída: métricas (com exemplar), log correlacionado e resposta."""
+        duration = time.time() - start
+        span.set_attribute("http.response.status_code", status)
+        REQUESTS.labels(service=SERVICE_NAME, path="/pagar", status=str(status)).inc(
+            exemplar=exemplar()
+        )
+        DURATION.labels(service=SERVICE_NAME, path="/pagar").observe(
+            duration, exemplar=exemplar()
+        )
+        PAGAMENTOS.labels(service=SERVICE_NAME, resultado=resultado).inc()
+        log(level, message, path="/pagar", status=status,
+            duration_ms=round(duration * 1000, 2), **extra)
+        self._send_json(status, payload)
+
+    def _send_metrics(self):
+        # Prometheus pede OpenMetrics no header Accept: só nesse formato os exemplars são expostos.
+        if "application/openmetrics-text" in self.headers.get("Accept", ""):
+            content_type, body = OPENMETRICS_CONTENT_TYPE, generate_openmetrics(REGISTRY)
+        else:
+            content_type, body = CONTENT_TYPE_LATEST, generate_latest()
         self.send_response(200)
+        self.send_header("Content-Type", content_type)
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _send_json(self, status, payload):
+        self.send_response(status)
         self.send_header("Content-Type", "application/json")
         self.end_headers()
-        self.wfile.write(json.dumps({"status": "aprovado", "pedido_id": pedido_id}).encode("utf-8"))
+        self.wfile.write(json.dumps(payload, ensure_ascii=False).encode("utf-8"))
 
     def log_message(self, format, *args):
         pass

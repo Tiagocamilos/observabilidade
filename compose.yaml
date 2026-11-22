@@ -54,10 +54,10 @@ services:
   alloy:
     image: grafana/alloy:v1.20.1
     container_name: alloy
+    # 4317/4318 (OTLP) ficam só na rede interna do compose: os apps falam com "alloy:4318".
+    # Não publicar no host evita conflito de portas na máquina de quem roda o projeto.
     ports:
       - "12345:12345"
-      - "4317:4317"
-      - "4318:4318"
     command:
       - run
       - --server.http.listen-addr=0.0.0.0:12345
@@ -85,6 +85,13 @@ services:
   prometheus:
     image: prom/prometheus:v3.15.0
     container_name: prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      # recebe as métricas geradas pelo Tempo (service graph / span metrics)
+      - --web.enable-remote-write-receiver
+      # guarda exemplars (trace_id) para pular do gráfico para o trace
+      - --enable-feature=exemplar-storage
     ports:
       - "9090:9090"
     volumes:

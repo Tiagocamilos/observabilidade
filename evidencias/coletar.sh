@@ -15,6 +15,10 @@ echo; echo; echo "## Loki: 1 log recente com trace_id"
 curl -sG localhost:3100/loki/api/v1/query_range --data-urlencode 'query={service="loja-api"} |= "trace_id"' --data-urlencode 'limit=1'
 echo; echo; echo "## Tempo: busca de traces (esperado: traces de loja-api)"
 curl -s 'localhost:3200/api/search?limit=3'
+echo; echo; echo "## Tempo -> Prometheus: service graph (esperado: user->loja-api e loja-api->pagamento-service)"
+curl -s 'localhost:9090/api/v1/query?query=traces_service_graph_request_total' | python3 -c "import sys,json;[print(r['metric'].get('client'),'->',r['metric'].get('server'),r['value'][1]) for r in json.load(sys.stdin)['data']['result']]"
+echo; echo "## Prometheus: exemplars com trace_id (esperado: > 0 séries)"
+curl -s "localhost:9090/api/v1/query_exemplars?query=http_request_duration_seconds_bucket&start=$(($(date +%s)-600))&end=$(date +%s)" | python3 -c "import sys,json;d=json.load(sys.stdin)['data'];print(len(d),'séries; exemplo:',d[0]['exemplars'][0]['labels'] if d else None)"
 echo; echo; echo "## Grafana: datasources provisionados"
 curl -s -u admin:admin localhost:3000/api/datasources | python3 -c "import sys,json;[print(d['name'],d['type']) for d in json.load(sys.stdin)]"
 } 2>&1 | tee "$OUT"

@@ -1,31 +1,27 @@
 # Roteiro de evidências (≈10 min)
 
-Salve cada print nesta pasta com o nome indicado (os nomes são os citados em `docs/arquitetura-e-decisoes.md`).
-Suba tudo e espere ~2 min: `docker compose up -d --build`. Depois rode `./evidencias/coletar.sh`.
+Salve cada print **nesta pasta**, com o nome indicado. Esses são os nomes citados em
+`docs/arquitetura-e-decisoes.md`, seção 7. Os prints precisam estar como **arquivos PNG commitados**, não só
+como anexos colados no GitHub, porque numa entrega em ZIP os anexos se perdem.
+
+1. Suba tudo: `docker compose up -d --build` e espere ~2 min.
+2. Rode `./evidencias/coletar.sh`. Ele atualiza `saida-verificacao.txt` com provas em texto.
+3. Tire os prints abaixo.
 
 ## Projeto Final
-| # | Arquivo | Como obter |
-|---|---------|-----------|
-| 1 | `01-docker-compose-ps.png` | Terminal: `docker compose ps` — 8 serviços Up |
-<img width="1920" height="603" alt="{C3DF1527-85A3-435D-BDCC-D6FC125FAE68}" src="https://github.com/user-attachments/assets/bd7498c1-d413-4890-851a-69e86d5d6cbd" />
 
-| 2 | `02-grafana-dashboard-red.png` | http://localhost:3000 (admin/admin) → Dashboards → Projeto Final - Observabilidade → painel RED & Logs (mostra métricas Prometheus + logs Loki) |
-<img width="1359" height="744" alt="{8BF8951B-B2CD-4DB8-AA3A-CB124EB139B9}" src="https://github.com/user-attachments/assets/005a5afa-7b4e-4f61-ad12-89d454fa6f34" />
+| # | Arquivo | Status | Como obter |
+|---|---------|--------|-----------|
+| 1 | [`01-docker-compose-ps.png`](01-docker-compose-ps.png) | ✅ (refazer: a lista de portas do Alloy mudou) | Terminal: `docker compose ps` com os 8 serviços `Up` |
+| 2 | [`02-grafana-dashboard-red.png`](02-grafana-dashboard-red.png) | ✅ (refazer: o painel ganhou Service Graph e Pagamentos) | <http://localhost:3000> (admin/admin) → Dashboards → Projeto Final - Observabilidade → RED & Logs |
+| 3 | `03-loki-logs-traceid.png` | ❌ falta | Explore → Loki → `{service=~"loja-api\|pagamento-service"} \| json`; expanda uma linha e mostre o botão **Tempo** no campo TraceID |
+| 4 | `04-tempo-trace-distribuido.png` | ❌ falta | Clique no botão Tempo (ou Explore → Tempo → Search → Run query) e abra um `HTTP POST /checkout` com os spans `loja-api` → `pagamento-service` expandidos |
+| 5 | `05-trace-para-logs.png` | ❌ falta | No trace, clique em **Logs for this span** (correlação trace → logs) |
+| 6 | `06-prometheus-targets.png` | ❌ falta | <http://localhost:9090/targets>, com os 4 targets `UP` |
+| 7 | `07-service-graph.png` | ❌ falta | Explore → Tempo → aba **Service Graph** (ou o painel no dashboard), mostrando `loja-api → pagamento-service` |
+| 8 | `08-trace-com-erro.png` | ❌ falta | Explore → Tempo → TraceQL `{ status = error }` → abra um `POST /checkout` com 502 do pagamento (span vermelho + exceção) |
 
-| 3 | `03-loki-logs-traceid.png` | Explore → Loki → `{service=~"loja-api|pagamento-service"} \| json`; expanda uma linha e mostre o botão **Tempo** no campo TraceID |
-<img width="1124" height="659" alt="{2046E850-C14F-4558-860F-5FFA0870B6B5}" src="https://github.com/user-attachments/assets/80aa52d1-aaf3-4697-842e-4de043ca5629" />
-
-
-| 4 | `04-tempo-trace-distribuido.png` | Clique no botão Tempo (ou Explore → Tempo → Search → Run query, abra um `POST /checkout`): árvore loja-api → pagamento-service | <img width="972" height="665" alt="{9FDC3BE9-8701-40AB-B836-9C863E8A5B54}" src="https://github.com/user-attachments/assets/4d17e9a2-30d3-4243-b3ef-fac3d805d650" />
-
-
-| 5 | `05-trace-para-logs.png` | No trace, clique em **Logs for this span** (correlação trace→logs) |
-<img width="797" height="664" alt="{B6DBEC7B-5C13-442E-9FE4-0AD8AE4EE733}" src="https://github.com/user-attachments/assets/06961fb7-5cc6-41d2-900c-24bf8b02b0a6" />
-<img width="845" height="668" alt="{9A7F6ABC-A03B-40BC-BFBE-A67969C795FA}" src="https://github.com/user-attachments/assets/d9b7dee5-2480-461a-8221-8af844fecda0" />
-
-| 6 | `06-prometheus-targets.png` | http://localhost:9090/targets — todos UP |
-
-Print de um trace com erro (`/erro` ou pagamento 502) com o span em vermelho.
+Opcional: print do painel de p95 com os **exemplars** (losangos) e do trace aberto ao clicar num deles.
 
 ## Prática 4 (PDF separado)
 Use a pasta `atividade-4-misterio-checkout/`. **Pare antes a stack do projeto** (`docker compose down`): as portas são as mesmas.

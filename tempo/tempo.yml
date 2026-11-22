@@ -22,4 +22,24 @@ storage:
     local:
       path: /tmp/tempo/blocks
 
+# Metrics-generator: deriva métricas a partir dos spans e envia ao Prometheus (remote write).
+# - service-graphs: alimenta o "Service Graph" (aresta loja-api -> pagamento-service)
+# - span-metrics:   taxa/erros/latência por span (traces_spanmetrics_*)
+metrics_generator:
+  registry:
+    external_labels:
+      source: tempo
+  storage:
+    path: /tmp/tempo/generator/wal
+    remote_write:
+      - url: http://prometheus:9090/api/v1/write
+        send_exemplars: true
+  traces_storage:
+    path: /tmp/tempo/generator/traces
+
+overrides:
+  defaults:
+    metrics_generator:
+      processors: [service-graphs, span-metrics, local-blocks]
+
 # RESUMO FINAL (Fim): Fornece o backend de rastreamento distribuído da stack.

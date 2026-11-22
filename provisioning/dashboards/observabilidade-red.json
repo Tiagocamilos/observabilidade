@@ -238,7 +238,7 @@
       "id": 6,
       "type": "timeseries",
       "title": "Duration — Latência p95 por Serviço e Rota",
-      "description": "Distribuição da cauda de latência (p95) detalhada por serviço e endpoint.",
+      "description": "p95 por serviço e rota. Os losangos são exemplars: clique em um para abrir o trace correspondente no Tempo.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -263,7 +263,8 @@
             "uid": "prometheus"
           },
           "expr": "histogram_quantile(0.95, sum by (le, service, path) (rate(http_request_duration_seconds_bucket[1m])))",
-          "legendFormat": "{{service}} {{path}}"
+          "legendFormat": "{{service}} {{path}}",
+          "exemplar": true
         }
       ],
       "options": {
@@ -279,13 +280,101 @@
       }
     },
     {
+      "id": 9,
+      "type": "row",
+      "title": "Negócio e Dependências (Service Graph gerado pelo Tempo)",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Pagamentos por Resultado (por segundo)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Métrica de negócio do pagamento-service: aprovado, recusado (falha na operadora) e inválido.",
+      "gridPos": {
+        "x": 0,
+        "y": 17,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (resultado) (rate(pagamentos_total[1m]))",
+          "legendFormat": "{{resultado}}"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "nodeGraph",
+      "title": "Service Graph — quem chama quem (Tempo metrics-generator)",
+      "datasource": {
+        "type": "tempo",
+        "uid": "tempo"
+      },
+      "description": "Gerado a partir dos spans CLIENT/SERVER pelo metrics-generator do Tempo e gravado no Prometheus.",
+      "gridPos": {
+        "x": 12,
+        "y": 17,
+        "w": 12,
+        "h": 8
+      },
+      "options": {},
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "tempo",
+            "uid": "tempo"
+          },
+          "queryType": "serviceMap"
+        }
+      ]
+    },
+    {
       "id": 7,
       "type": "row",
       "title": "Logs Estruturados Correlacionados com TraceID (Loki -> Tempo)",
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 16,
+        "y": 25,
         "w": 24,
         "h": 1
       },
@@ -301,7 +390,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 17,
+        "y": 26,
         "w": 24,
         "h": 8
       },
