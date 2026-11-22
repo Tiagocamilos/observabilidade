@@ -24,6 +24,8 @@ Suba tudo e espere ~2 min: `docker compose up -d --build`. Depois rode `./eviden
 <img width="845" height="668" alt="{9A7F6ABC-A03B-40BC-BFBE-A67969C795FA}" src="https://github.com/user-attachments/assets/d9b7dee5-2480-461a-8221-8af844fecda0" />
 
 | 6 | `06-prometheus-targets.png` | http://localhost:9090/targets — todos UP |
+<img width="1304" height="664" alt="{6102226C-EB81-41B5-8EFC-EA71B11FBEA0}" src="https://github.com/user-attachments/assets/23de9061-557f-487a-b25c-991bdef3a4d4" />
+
 
 Print de um trace com erro (`/erro` ou pagamento 502) com o span em vermelho.
 
