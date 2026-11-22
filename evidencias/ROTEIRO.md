@@ -13,8 +13,15 @@ Suba tudo e espere ~2 min: `docker compose up -d --build`. Depois rode `./eviden
 <img width="1359" height="744" alt="{8BF8951B-B2CD-4DB8-AA3A-CB124EB139B9}" src="https://github.com/user-attachments/assets/005a5afa-7b4e-4f61-ad12-89d454fa6f34" />
 
 | 3 | `03-loki-logs-traceid.png` | Explore → Loki → `{service=~"loja-api|pagamento-service"} \| json`; expanda uma linha e mostre o botão **Tempo** no campo TraceID |
+<img width="1124" height="659" alt="{2046E850-C14F-4558-860F-5FFA0870B6B5}" src="https://github.com/user-attachments/assets/80aa52d1-aaf3-4697-842e-4de043ca5629" />
+
+
 | 4 | `04-tempo-trace-distribuido.png` | Clique no botão Tempo (ou Explore → Tempo → Search → Run query, abra um `POST /checkout`): árvore loja-api → pagamento-service |
+
+
 | 5 | `05-trace-para-logs.png` | No trace, clique em **Logs for this span** (correlação trace→logs) |
+
+
 | 6 | `06-prometheus-targets.png` | http://localhost:9090/targets — todos UP |
 
 Opcional (bônus): print de um trace com erro (`/erro` ou pagamento 502) com o span em vermelho.
