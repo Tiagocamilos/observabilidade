@@ -77,5 +77,5 @@ Serviços iniciados automaticamente:
 
 * **Arquitetura e Decisões de Instrumentação:** [`docs/arquitetura-e-decisoes.md`](docs/arquitetura-e-decisoes.md)
 * **Evidências de Execução (Screenshots):** Pasta [`evidencias/`](evidencias/)
-* ** Prática 4 (PDF separado no diretório:** atividade-4-misterio-checkout/ ) 
+* ** Prática 4 (PDF separado no diretório:** Pasta [`atividade-4-misterio-checkout/`](atividade-4-misterio-checkout/)
 
