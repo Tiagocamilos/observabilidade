@@ -1,6 +1,5 @@
 #!/bin/sh
-# Coleta provas em texto de que os 3 sinais chegam ao Grafana. Rode com a stack no ar,
-# ~1 min depois do "docker compose up". Saída: evidencias/saida-verificacao.txt
+# Coleta provas depois do "docker compose up". Saída: evidencias/saida-verificacao.txt
 OUT="$(dirname "$0")/saida-verificacao.txt"
 {
 echo "== $(date) =="
