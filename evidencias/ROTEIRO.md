@@ -1,6 +1,6 @@
-# Roteiro de evidências (≈10 min)
+# Roteiro de evidências
 
-Print nesta pasta com o nome indicado (os nomes são os citados em `docs/arquitetura-e-decisoes.md`).
+Prints com o nome indicado (os nomes são os citados em `docs/arquitetura-e-decisoes.md`).
 Tempo de Build ~2 min: `docker compose up -d --build`. Depois rode `./evidencias/coletar.sh`.
 
 ## Projeto Final
