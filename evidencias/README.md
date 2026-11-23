@@ -1,6 +1,7 @@
 # Evidências de execução
 
-Prints tirados com a stack no ar (`docker compose up -d --build`). Conteudo em texto: [`saida-verificacao.txt`](saida-verificacao.txt) (gerado pela execução do `coletar.sh`).
+Prints tirados com a stack no ar (`docker compose up -d --build`). 
+Conteúdo em texto: [`saida-verificacao.txt`](saida-verificacao.txt) (gerado pela execução do `coletar.sh`).
 
 ## 1. Stack no ar
 ![docker compose ps](01-docker-compose-ps.png)
