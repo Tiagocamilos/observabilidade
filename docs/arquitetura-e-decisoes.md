@@ -110,6 +110,3 @@ Expõe `POST /pagar` (aprovação do pagamento), `GET /` (verificação de que e
 - **Tem falhas e lentidão previsíveis** (`/erro`, 10% de falha no pagamento, latência variável), o que dá algo para investigar nos três sinais.
 - **Atravessa dois serviços**, o que permite mostrar um trace distribuído e a correlação entre log e trace pelo `trace_id`.
 - **O gerador de tráfego** (`trafego/gerar-trafego.sh`, serviço `trafego` no compose) mantém requisições contínuas: cerca de 45% `POST /checkout`, 30% `/produtos`, 20% `/` e 5% `/erro`.
-
-<!-- RESUMO FINAL (Fim): Documentação completa exigida pelos critérios de avaliação do Projeto Final,
-     justificando escolhas técnicas de arquitetura, cardinalidade, estatística e correlação. -->
