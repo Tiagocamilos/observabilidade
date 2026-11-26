@@ -131,6 +131,3 @@ volumes:
   loki-data:
   prometheus-data:
   tempo-data:
-
-# RESUMO FINAL (Fim): Orquestra 8 containers integrados sem necessidade de configuração manual
-# após a subida, garantindo reprodutibilidade total para a avaliação do projeto final.
