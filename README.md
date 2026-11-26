@@ -10,11 +10,13 @@
 
 ---
 
-## 1. Como Subir Toda a Stack (Um Único Comando)
+## 1. Como Subir Toda a Stack
 
-Na raiz do repositório, execute:
+Execute:
 
 ```bash
+git clone https://github.com/Tiagocamilos/observabilidade.git
+cd observabilidade
 docker compose up -d --build
 ```
 
